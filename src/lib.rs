@@ -2,7 +2,6 @@ use std::path::Path;
 use std::fs;
 use thiserror::Error;
 
-use regex::Regex;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -30,29 +29,39 @@ pub fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str)
     assert_eq!(output, expected_output);
 }
 
-pub fn run_with_test(day: &str, part1: AocProgram, part2: Option<AocProgram>) {
+pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProgram>) {
+    let _cwd = std::env::current_dir();
 
-    let example_input = read_input(format!("{day}/example.txt", day=day)).unwrap();
-    let example_output = fs::read(format!("{day}/example_answer.txt", day=day));
-    let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
+    let real_input = read_input(format!("inputs/{day}/input.txt", day=day)).unwrap();
 
-    run_test(part1, &example_input, &example_output);
+    if let Some(part1) = part1 {
+        let example_input = read_input(format!("inputs/{day}/example.txt", day=day)).unwrap();
+        let example_output = fs::read(format!("inputs/{day}/example_answer.txt", day=day));
+        let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
 
-    let real_input = read_input(format!("{day}/input.txt", day=day)).unwrap();
-    let part1_answer = part1(&real_input);
+        run_test(part1, &example_input, &example_output);
 
-    println!("part1: {}", part1_answer);
+        println!("part 1 test OK");
+
+        let part1_answer = part1(&real_input);
+
+        println!("part1: {}", part1_answer);
+    }
 
 
     if let Some(part2) = part2 {
 
-        let example_input = read_input(format!("{day}/example2.txt", day=day)).unwrap();
-        let example_output = fs::read(format!("{day}/example_answer2.txt", day=day));
+        let example_input = read_input(format!("inputs/{day}/example2.txt", day=day)).unwrap();
+        let example_output = fs::read(format!("inputs/{day}/example_answer2.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
         run_test(part2, &example_input, &example_output);
 
+        println!("part 2 test OK");
+
         let part2_answer = part2(&real_input);
         println!("part2: {}", part2_answer);
-        
+
     }
+
+    println!("finished.");
 }
