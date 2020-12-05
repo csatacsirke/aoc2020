@@ -2,7 +2,6 @@ use std::path::Path;
 use std::fs;
 use thiserror::Error;
 
-//extern crate regex;
 use regex::Regex;
 
 #[derive(Debug, Error)]
@@ -17,15 +16,43 @@ pub enum Error {
 pub fn read_input<P: AsRef<Path>>(file_path: P) -> Result<Vec<String>, Error> {
     let file_contents = fs::read(file_path)?;
     let file_contents = String::from_utf8(file_contents)?;
-
-    //let input_elements = file_contents.split(",");
-    let regex = Regex::new(r"\w+").unwrap();
-    let strings = regex.find_iter(&file_contents)
-        .map(|m| String::from(m.as_str()))
-        .collect::<Vec<String>>();
-    //let matches = regex.split(&file_contents).into_iter().collect();
-    //let input_elements = file_contents.split()
-    //let strings = input_elements.map(String::from).collect::<Vec<String>>();
+    let lines : Vec<String> = file_contents.lines().map(|line| line.to_string()).collect();
     
-    Ok(strings)
+
+    Ok(lines)
+}
+
+
+pub type AocProgram = fn(&Vec<String>) -> String;
+
+pub fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str) {
+    let output = program(input);
+    assert_eq!(output, expected_output);
+}
+
+pub fn run_with_test(day: &str, part1: AocProgram, part2: Option<AocProgram>) {
+
+    let example_input = read_input(format!("{day}/example.txt", day=day)).unwrap();
+    let example_output = fs::read(format!("{day}/example_answer.txt", day=day));
+    let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
+
+    run_test(part1, &example_input, &example_output);
+
+    let real_input = read_input(format!("{day}/input.txt", day=day)).unwrap();
+    let part1_answer = part1(&real_input);
+
+    println!("part1: {}", part1_answer);
+
+
+    if let Some(part2) = part2 {
+
+        let example_input = read_input(format!("{day}/example2.txt", day=day)).unwrap();
+        let example_output = fs::read(format!("{day}/example_answer2.txt", day=day));
+        let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
+        run_test(part2, &example_input, &example_output);
+
+        let part2_answer = part2(&real_input);
+        println!("part2: {}", part2_answer);
+        
+    }
 }

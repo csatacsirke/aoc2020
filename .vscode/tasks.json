@@ -6,7 +6,7 @@
         {
             "label": "Cargo Build",
             "type": "shell",
-            "command": "cargo build -p day01",
+            "command": "cargo build -p day02",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
