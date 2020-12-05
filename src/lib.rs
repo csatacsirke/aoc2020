@@ -26,16 +26,20 @@ pub type AocProgram = fn(&Vec<String>) -> String;
 
 pub fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str) {
     let output = program(input);
+    if output != expected_output {
+        println!("Not equal: '{}' '{}'", expected_output, output);
+    }
     assert_eq!(output, expected_output);
 }
 
 pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProgram>) {
     let _cwd = std::env::current_dir();
 
+    
+    let example_input = read_input(format!("inputs/{day}/example.txt", day=day)).unwrap();
     let real_input = read_input(format!("inputs/{day}/input.txt", day=day)).unwrap();
 
     if let Some(part1) = part1 {
-        let example_input = read_input(format!("inputs/{day}/example.txt", day=day)).unwrap();
         let example_output = fs::read(format!("inputs/{day}/example_answer.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
 
@@ -51,7 +55,6 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
 
     if let Some(part2) = part2 {
 
-        let example_input = read_input(format!("inputs/{day}/example2.txt", day=day)).unwrap();
         let example_output = fs::read(format!("inputs/{day}/example_answer2.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
         run_test(part2, &example_input, &example_output);

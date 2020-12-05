@@ -13,6 +13,3 @@ regex = "1"
 [workspace]
 members = ["day01", "day02"]
 
-
-[profile.dev]
-opt-level = 0
