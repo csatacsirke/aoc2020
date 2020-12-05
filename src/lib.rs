@@ -35,6 +35,7 @@ pub fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str)
 pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProgram>) {
     let _cwd = std::env::current_dir();
 
+    println!("Running '{}'", day);
     
     let example_input = read_input(format!("inputs/{day}/example.txt", day=day)).unwrap();
     let real_input = read_input(format!("inputs/{day}/input.txt", day=day)).unwrap();
@@ -49,7 +50,7 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
 
         let part1_answer = part1(&real_input);
 
-        println!("part1: {}", part1_answer);
+        println!("part 1 answer: {}", part1_answer);
     }
 
 
@@ -62,7 +63,7 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
         println!("part 2 test OK");
 
         let part2_answer = part2(&real_input);
-        println!("part2: {}", part2_answer);
+        println!("part 2 answer: {}", part2_answer);
 
     }
 

@@ -80,6 +80,6 @@ fn part2(input: &Vec<String>) -> String {
     return valid_password_count.to_string();
 }
 
-fn main() {
+fn main() { 
     aoc2020::run_with_test("day02", Some(part1), Some(part2));
 }
