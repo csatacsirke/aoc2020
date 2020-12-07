@@ -74,16 +74,16 @@ fn main() -> Result<(), aoc2020::Error> {
     println!("Start\r\n");
 
 
-    let input : Vec<_> = aoc2020::read_input(r"f:\Programming\AoC2020\inputs\01\example_p1_1.txt")?;
+    let input : Vec<_> = aoc2020::read_input(r"day01/input/example_p1_1.txt")?;
         
-    let output = fs::read(r"f:\Programming\AoC2020\inputs\01\example_p1_1.answer.txt");
+    let output = fs::read(r"day01/input/example_p1_1.answer.txt");
     let output = String::from_utf8(output.unwrap()).unwrap().trim().to_string();
     
 
     run_test(part1, &input, &output);
     run_test(part2, &input, "241861950");
     
-    let input : Vec<_> = aoc2020::read_input(r"f:\Programming\AoC2020\inputs\01\input.txt")?;
+    let input : Vec<_> = aoc2020::read_input(r"day01/input/input.txt")?;
     
     let answer = part1(&input);
     println!("part1 {}", answer);

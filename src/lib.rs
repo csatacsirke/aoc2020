@@ -37,11 +37,11 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
 
     println!("Running '{}'", day);
     
-    let example_input = read_input(format!("inputs/{day}/example.txt", day=day)).unwrap();
-    let real_input = read_input(format!("inputs/{day}/input.txt", day=day)).unwrap();
+    let example_input = read_input(format!("{day}/input/example.txt", day=day)).unwrap();
+    let real_input = read_input(format!("{day}/input/input.txt", day=day)).unwrap();
 
     if let Some(part1) = part1 {
-        let example_output = fs::read(format!("inputs/{day}/example_answer.txt", day=day));
+        let example_output = fs::read(format!("{day}/input/example_answer.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
 
         run_test(part1, &example_input, &example_output);
@@ -56,7 +56,7 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
 
     if let Some(part2) = part2 {
 
-        let example_output = fs::read(format!("inputs/{day}/example_answer2.txt", day=day));
+        let example_output = fs::read(format!("{day}/input/example_answer2.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
         run_test(part2, &example_input, &example_output);
 
