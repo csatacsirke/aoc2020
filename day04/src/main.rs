@@ -180,5 +180,5 @@ fn part2(input: &Vec<String>) -> String {
 }
 
 fn main() { 
-    aoc2020::run_with_test("day04", Some(part1), Some(part2));
+    lib_aoc::run_with_test("day04", Some(part1), Some(part2));
 }

@@ -2,8 +2,20 @@ use std::path::Path;
 use std::fs;
 use std::collections::HashSet;
 use regex::Regex;
+use thiserror::Error;
 
 type AocProgram = fn(&Vec<String>) -> String;
+
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+   
+    #[error(transparent)]
+    String(#[from] std::string::FromUtf8Error),
+}
+
 
 fn part1(input: &Vec<String>) -> String {
     
@@ -47,7 +59,7 @@ fn part2(input: &Vec<String>) -> String {
 }
 
 
-pub fn read_input<P: AsRef<Path>>(file_path: P) -> Result<Vec<String>, aoc2020::Error> {
+pub fn read_input<P: AsRef<Path>>(file_path: P) -> Result<Vec<String>, Error> {
     let file_contents = fs::read(file_path)?;
     let file_contents = String::from_utf8(file_contents)?;
 
@@ -69,12 +81,12 @@ fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str) {
     assert_eq!(output, expected_output);
 }
 
-fn main() -> Result<(), aoc2020::Error> {
+fn main() -> Result<(), Error> {
 
     println!("Start\r\n");
 
 
-    let input : Vec<_> = aoc2020::read_input(r"day01/input/example_p1_1.txt")?;
+    let input : Vec<_> = read_input(r"day01/input/example_p1_1.txt")?;
         
     let output = fs::read(r"day01/input/example_p1_1.answer.txt");
     let output = String::from_utf8(output.unwrap()).unwrap().trim().to_string();
@@ -83,7 +95,7 @@ fn main() -> Result<(), aoc2020::Error> {
     run_test(part1, &input, &output);
     run_test(part2, &input, "241861950");
     
-    let input : Vec<_> = aoc2020::read_input(r"day01/input/input.txt")?;
+    let input : Vec<_> = read_input(r"day01/input/input.txt")?;
     
     let answer = part1(&input);
     println!("part1 {}", answer);
