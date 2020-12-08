@@ -32,6 +32,10 @@ pub fn run_test(program: AocProgram, input: &Vec<String>, expected_output: &str)
     assert_eq!(output, expected_output);
 }
 
+//pub fn run_test_from_file(program: AocProgram, input: &Vec<String>, expected_output: &str) {
+//    // todo
+//}
+
 pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProgram>) {
     let _cwd = std::env::current_dir();
 
