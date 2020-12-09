@@ -59,10 +59,16 @@ pub fn run_with_test(day: &str, part1: Option<AocProgram>, part2: Option<AocProg
 
 
     if let Some(part2) = part2 {
+        // nem kötelező, hogy létezzen
+        let example2_input = read_input(format!("{day}/input/example2.txt", day=day));
+        let example2_input = match example2_input {
+            Ok(input) => input,
+            _ => example_input
+        };
 
         let example_output = fs::read(format!("{day}/input/example_answer2.txt", day=day));
         let example_output = String::from_utf8(example_output.unwrap()).unwrap().trim().to_string();
-        run_test(part2, &example_input, &example_output);
+        run_test(part2, &example2_input, &example_output);
 
         println!("part 2 test OK");
 
