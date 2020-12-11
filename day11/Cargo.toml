@@ -1,5 +1,5 @@
 [package]
-name = "lib_aoc"
+name = "day11"
 version = "0.1.0"
 authors = ["Csatacsirke <battlechicken74@gmail.com>"]
 edition = "2018"
@@ -7,6 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lib_aoc = { path = "../lib_aoc" }
 regex = "1"
-thiserror = "^1"
-coord_2d = "0.2.0"
+
+[profile.dev]
+opt-level = 0

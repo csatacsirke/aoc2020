@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::fs;
 use thiserror::Error;
-
+pub use coord_2d::*;
 
 #[derive(Debug, Error)]
 pub enum Error {
