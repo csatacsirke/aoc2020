@@ -178,6 +178,7 @@ fn iterate_grid(grid: &Grid, predicate: SeatPredicate) -> Grid {
     return new_grid;
 }
 
+#[allow(dead_code)]
 fn print_grid(grid: &Grid) {
     
     for y in 0..grid.height {

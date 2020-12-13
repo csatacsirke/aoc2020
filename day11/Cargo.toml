@@ -9,6 +9,3 @@ edition = "2018"
 [dependencies]
 lib_aoc = { path = "../lib_aoc" }
 regex = "1"
-
-[profile.dev]
-opt-level = 0
