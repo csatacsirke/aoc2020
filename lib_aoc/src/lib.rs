@@ -3,6 +3,8 @@ use std::fs;
 use thiserror::Error;
 pub use coord_2d::*;
 pub use reduce::*;
+pub use regex::*;
+pub use std::collections::hash_map::HashMap;
 
 #[derive(Debug, Error)]
 pub enum Error {
