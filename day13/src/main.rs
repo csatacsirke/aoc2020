@@ -51,7 +51,6 @@ fn solve_modulo_eq((a1, n1): (i128, i128), (a2, n2): (i128, i128)) -> (i128, i12
         }
     }
 
-    panic!()
 }
 
 fn part2_single_line(input: &str) -> String {
