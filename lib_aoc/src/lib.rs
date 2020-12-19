@@ -5,6 +5,7 @@ pub use coord_2d::*;
 pub use reduce::*;
 pub use regex::*;
 pub use std::collections::hash_map::HashMap;
+pub use std::collections::hash_set::HashSet;
 
 #[derive(Debug, Error)]
 pub enum Error {
