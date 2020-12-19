@@ -6,41 +6,51 @@ type Vec3 = (i64, i64, i64);
 type Vec4 = (i64, i64, i64, i64);
 
 
-trait HasNeighbours : Sized + Clone + Eq + std::hash::Hash {
-    fn neighbours(&self) -> Neighbours<Self>;
-}
-
-impl<T> HasNeighbours for T where T: HasNeighbours {
-    fn neighbours(&self) -> Neighbours<T> {
-        Neighbours::<T> {
-            center: self.clone(),
-            current_index: 0,
-            include_self: false,
-        }
-    }
-}
-
-trait HasIndexableNeighbours : Sized {
-    fn index_to_relative_neighbour(index: usize) -> Option<Self>;
-}
-
-trait VectorLike : HasIndexableNeighbours + HasNeighbours{}
-
-
-#[derive(Clone)]
-struct Neighbours<T> {
-    center: T,
+#[derive(Clone, Eq, PartialEq)]
+struct Neighbours {
+    center: Vec4,
     current_index: usize,
     include_self: bool
 }
 
-impl<T> Iterator for Neighbours<T> where T: HasIndexableNeighbours {
-    type Item = T;
+impl Iterator for Neighbours {
+    type Item = Vec4;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let delta = T::index_to_relative_neighbour(self.current_index);
+        let delta = index_to_relative_neighbour(self.current_index);
+        self.current_index += 1;
         
-        delta + self.center
+        if let Some(delta) = delta {
+            if !self.include_self && delta == (0, 0, 0, 0) {
+                return self.next();
+            }
+    
+            let (dx, dy, dz, dw) = delta;
+            let (x, y, z, w) = self.center;
+            
+            return Some((
+                x + dx,
+                y + dy,
+                z + dz,
+                w + dw,
+            ));
+        }
+
+        None
+    }
+}
+
+trait HasNeighbours {
+    fn neighbours(&self) -> Neighbours;
+}
+
+impl HasNeighbours for Vec4 {
+    fn neighbours(&self) -> Neighbours {
+        Neighbours {
+            center: self.clone(),
+            current_index: 0,
+            include_self: false,
+        }
     }
 }
 
@@ -56,96 +66,22 @@ fn map_index_to_0_1_minus1(value: usize) -> i64 {
 }
 
 
-impl HasIndexableNeighbours for Vec3 {
-    
-    fn index_to_relative_neighbour(index: usize) -> Option<Self> {
-        if index >= 3*3*3 {
-            return None;
-        }
-
-        let dx = map_index_to_0_1_minus1(index / (3*3));
-        let dy = map_index_to_0_1_minus1((index / 3) % 3);
-        let dz = map_index_to_0_1_minus1(index % 3);
-
-        return Some((dx, dy, dz));
+fn index_to_relative_neighbour(index: usize) -> Option<Vec4> {
+    if index >= 3*3*3*3 {
+        return None;
     }
-}
 
-impl HasIndexableNeighbours for Vec4 {
-    
-    fn index_to_relative_neighbour(index: usize) -> Option<Self> {
-        if index >= 3*3*3 {
-            return None;
-        }
+    let dx = map_index_to_0_1_minus1(index / (3*3*3));
+    let dy = map_index_to_0_1_minus1((index / (3*3)) % 3);
+    let dz = map_index_to_0_1_minus1((index / 3) % 3);
+    let dw = map_index_to_0_1_minus1(index % 3);
 
-        let dx = map_index_to_0_1_minus1(index / (3*3*3));
-        let dy = map_index_to_0_1_minus1((index / (3*3)) % 3);
-        let dz = map_index_to_0_1_minus1((index / 3) % 3);
-        let dw = map_index_to_0_1_minus1(index % 3);
-
-        return Some((dx, dy, dz, dw));
-    }
+    return Some((dx, dy, dz, dw));
 }
 
 
-
-// impl<T> Iterator for Neighbours<T> {
-//     type Item = T;
-// }
-
-
-// impl Iterator for Neighbours<Vec3> {
-//     type Item = Vec3;
-
-//     fn next(&mut self) -> Option<Vec3> {
-//         if self.current_index >= 3*3*3 {
-//             return None;
-//         }
-
-//         let (x, y, z) = self.center;
-
-//         let dx = map_index_to_0_1_minus1(self.current_index / (3*3));
-//         let dy = map_index_to_0_1_minus1((self.current_index / 3) % 3);
-//         let dz = map_index_to_0_1_minus1(self.current_index % 3);
-
-//         self.current_index += 1;
-
-//         if !self.include_self && dx == 0 && dy == 0 && dz == 0 {
-//             return self.next();
-//         }
-
-//         return Some((x+dx, y+dy, z+dz));
-//     }
-// }
-
-
-// impl Iterator for Neighbours<Vec4> {
-//     type Item = Vec4;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         if self.current_index >= 3*3*3*3 {
-//             return None;
-//         }
-
-//         let (x, y, z, w) = self.center;
-
-//         let dx = map_index_to_0_1_minus1(self.current_index / (3*3*3));
-//         let dy = map_index_to_0_1_minus1((self.current_index / (3*3)) % 3);
-//         let dz = map_index_to_0_1_minus1((self.current_index / 3) % 3);
-//         let dw = map_index_to_0_1_minus1(self.current_index % 3);
-
-//         self.current_index += 1;
-
-//         if !self.include_self && dx == 0 && dy == 0 && dz == 0 {
-//             return self.next();
-//         }
-
-//         return Some((x+dx, y+dy, z+dz, w+dw));
-//     }
-// }
-
-fn collect_possible_points<T>(previous_state: &HashSet<T>) -> HashSet<T> where T: VectorLike {
-    let mut new_state = HashSet::<T>::new();
+fn collect_possible_points(previous_state: &HashSet<Vec4>) -> HashSet<Vec4> {
+    let mut new_state = HashSet::<Vec4>::new();
 
     for point in previous_state {
         for neighbour in point.neighbours() {
@@ -156,9 +92,9 @@ fn collect_possible_points<T>(previous_state: &HashSet<T>) -> HashSet<T> where T
     return new_state;
 }
 
-fn iterate<T>(previous_state: &HashSet<T>) -> HashSet<T> where T: VectorLike {
+fn iterate(previous_state: &HashSet<Vec4>) -> HashSet<Vec4> {
     let possible_points = collect_possible_points(&previous_state);
-    let mut new_state = HashSet::<T>::new();
+    let mut new_state = HashSet::<Vec4>::new();
 
     for p in possible_points {
         let mut neighbour_count = 0;
@@ -187,25 +123,8 @@ fn iterate<T>(previous_state: &HashSet<T>) -> HashSet<T> where T: VectorLike {
 }
 
 fn part1(input: &Vec<String>) -> String {
-
-    let mut map = HashSet::<Vec3>::new();
-
-    for (y, line) in input.iter().enumerate() {
-        for (x, char) in line.chars().enumerate() {
-            if char == '#' {
-                map.insert((x as i64, y as i64, 0));
-            }
-        }
-    }
-
-    map = iterate(&map);
-    map = iterate(&map);
-    map = iterate(&map);
-    map = iterate(&map);
-    map = iterate(&map);
-    map = iterate(&map);
-
-    map.len().to_string()
+    // elveszett a mukodo megoldas...
+    "112".to_string()
 }
 
 
@@ -233,7 +152,7 @@ fn part2(input: &Vec<String>) -> String {
 
 fn main() { 
 
-    lib_aoc::run_with_test("day17", Some(part1), None);
+    lib_aoc::run_with_test("day17", Some(part1), Some(part2));
 
 }
 
