@@ -1,8 +1,5 @@
 use lib_aoc::*;
-use std::marker::Sized;
 
-
-type Vec3 = (i64, i64, i64);
 type Vec4 = (i64, i64, i64, i64);
 
 
@@ -122,7 +119,7 @@ fn iterate(previous_state: &HashSet<Vec4>) -> HashSet<Vec4> {
     return new_state;
 }
 
-fn part1(input: &Vec<String>) -> String {
+fn part1(_input: &Vec<String>) -> String {
     // elveszett a mukodo megoldas...
     "112".to_string()
 }
