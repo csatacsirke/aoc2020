@@ -1,18 +1,7 @@
+use core::ops::Range;
 use lib_aoc::*;
 
-#[derive(Clone, Copy, PartialEq)]
-enum Precedence {
-    Equal,
-    AddIsStronger
-}
-
-enum Expression {
-    Add(Box<Expression>, Box<Expression>),
-    Mul(Box<Expression>, Box<Expression>),
-    Number(i64),
-}
-
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum Token {
     GroupStart,
     GroupEnd,
@@ -111,53 +100,13 @@ fn try_reduce(stack: &mut Vec<Token>) -> bool {
     did_reduce
 }
 
-fn parse_expression(line: &str, precedence: Precedence) -> i64 {
+fn parse_expression(line: &str) -> i64 {
 
     let re = regex::Regex::new(r"\(|\)|\s+|\w+|\+|\*").unwrap();
 
     let mut it = re.find_iter(line);
 
     
-    let mut stack = Vec::<Token>::new();
-
-
-    while let Some(token_as_str) = it.next().and_then(|token| Some(token.as_str())) {
-
-        let token: Token = token_as_str.into();
-        
-        
-        if let Token::Whitespace = token {
-            continue;
-        }
-
-        //println!("'{}'", token_as_str);
-
-        stack.push(token);
-
-        while try_reduce(&mut stack) { }
-
-
-    }
-
-    debug_assert!(stack.len() == 1);
-    
-    let number = match stack.pop().unwrap() {
-        Token::Number(number) => number,
-        _ => panic!(),
-    };
-
-    number
-}
-
-
-
-fn parse_expression_v2(line: &str) -> i64 {
-
-    let re = regex::Regex::new(r"\(|\)|\s+|\w+|\+|\*").unwrap();
-
-    let mut it = re.find_iter(line);
-
-    let mut expression_tree = None::<Expression>;
     let mut stack = Vec::<Token>::new();
 
 
@@ -193,7 +142,7 @@ fn parse_expression_v2(line: &str) -> i64 {
 fn part1(input: &Vec<String>) -> String {
 
     let answer = input.iter()
-        .map(|x| parse_expression(x, Precedence::Equal))
+        .map(|x| parse_expression(x))
         .reduce(|a, b| a + b)
         .unwrap();
 
@@ -202,10 +151,184 @@ fn part1(input: &Vec<String>) -> String {
 
 
 
+// enum Expression {
+//     Group(Box<Expression>),
+//     Add(Box<Expression>, Box<Expression>),
+//     Mul(Box<Expression>, Box<Expression>),
+//     Token(Token),
+// }
+
+fn try_single_reduce_single_expression(slice: &[Token]) -> Option<(Token, Range<usize>)> {
+    if slice.len() < 3 {
+        return None;
+    }
+
+    for i in 0..slice.len()-2 {
+        let tokens = &slice[i..i+3];
+        match tokens[0] {
+            Token::GroupStart => {},
+            _ => {continue;}
+        }
+
+        let number_token = match tokens[1] {
+            Token::Number(_) => tokens[1], 
+            _ => {continue;}
+        };
+
+        match tokens[2] {
+            Token::GroupEnd => {}
+            _ => {continue;}
+        }
+
+        return Some((number_token, i..i+3));
+    }
+
+    for i in 0..slice.len()-2 {
+        let tokens = &slice[i..i+3];
+        let number1 = match tokens[0] {
+            Token::Number(number) => number,
+            _ => {continue;}
+        };
+
+        match tokens[1] {
+            Token::OpAdd => tokens[1], 
+            _ => {continue;}
+        };
+
+        let number2 = match tokens[2] {
+            Token::Number(number) => number, 
+            _ => {continue;}
+        };
+
+        return Some((Token::Number(number1 + number2), i..i+3));
+    }
+
+    
+    for i in 0..slice.len()-2 {
+        let tokens = &slice[i..i+3];
+        let number1 = match tokens[0] {
+            Token::Number(number) => number,
+            _ => {continue;}
+        };
+
+        match tokens[1] {
+            Token::OpMul => tokens[1], 
+            _ => {continue;}
+        };
+
+        let number2 = match tokens[2] {
+            Token::Number(number) => number, 
+            _ => {continue;}
+        };
+
+        return Some((Token::Number(number1 * number2), i..i+3));
+    }
+
+
+    None
+}
+
+fn try_reduce_range_v2(list: &mut Vec<Token>, range: Range<usize>) -> bool {
+
+    if list.len() < 3 {
+        return false;
+    }
+
+    for i in range.start..range.end-2 {
+        let tokens = &list[i..i+2];
+        match tokens[0] {
+            Token::GroupStart => {},
+            _ => {continue;}
+        }
+
+        let mut count = 1;
+        let mut end = 0;
+        for j in i+1..range.end {
+            if list[j] == Token::GroupStart {
+                count += 1;
+            }
+            
+            if list[j] == Token::GroupEnd {
+                count -= 1;
+            }
+
+            if count == 0 {
+                end = j;
+                break;
+            };
+
+        };
+
+        if try_reduce_range_v2(list, i+1..end) {
+            return true;
+        }
+    }
+
+    if let Some((new_token, range_to_replace)) = try_single_reduce_single_expression(&list[range.clone()] ) {
+        //let range_to_replace = range_to_replace;
+        let range_to_replace = range.start+range_to_replace.start..range.start+range_to_replace.end;
+        list.drain(range_to_replace.clone());
+        list.insert(range_to_replace.start, new_token);
+        return true;
+    }
+
+
+    false
+}
+
+fn try_reduce_v2(list: &mut Vec<Token>) -> bool {
+    return try_reduce_range_v2(list, 0..list.len());
+    
+}
+
+fn parse_expression_v2(line: &str) -> i64 {
+
+    let re = regex::Regex::new(r"\(|\)|\s+|\w+|\+|\*").unwrap();
+
+    let mut it = re.find_iter(line);
+
+    let mut list = Vec::<Token>::new();
+
+
+    while let Some(token_as_str) = it.next().and_then(|token| Some(token.as_str())) {
+
+        let token: Token = token_as_str.into();
+        //let expression = Expression::Token(token);
+        
+        
+        if let Token::Whitespace = token {
+            continue;
+        }
+
+        //println!("'{}'", token_as_str);
+
+        list.push(token);
+    }
+
+    println!();
+    println!("{}", line);
+
+    while try_reduce_v2(&mut list) { 
+        println!("{:?}", list);
+    }
+
+    debug_assert!(list.len() == 1);
+    
+    let number = match list.pop().unwrap() {
+        Token::Number(number) => number,
+        _ => panic!(),
+    };
+
+    println!("{} -> {}", line, number);
+
+    number
+}
+
+
 fn part2(input: &Vec<String>) -> String {
 
     let answer = input.iter()
-        .map(|x| parse_expression(x, Precedence::AddIsStronger))
+        .map(|x| parse_expression_v2(x))
         .reduce(|a, b| a + b)
         .unwrap();
 
