@@ -1,4 +1,4 @@
-use std::{hash::Hash, vec};
+use std::{hash::Hash, unimplemented, vec};
 
 use lib_aoc::*;
 
@@ -224,17 +224,89 @@ fn part2(input: &Vec<String>) -> String {
         }
 
         if i == 4 {
-            corner_tile_data = flip(corner_tile_data);
+            corner_tile_data = flip(&corner_tile_data);
         } else {
-            corner_tile_data = rotate(corner_tile_data);
+            corner_tile_data = rotate(&corner_tile_data);
         }
         debug_assert!(i != 7);
     }
 
+
+    let mut position_to_tile_id_mapping = HashMap::<(usize, usize), TileId>::new();
+
+    position_to_tile_id_mapping.insert((0,0), corner_tile_id);
+
+
     paint(&mut picture, (0, 0), &corner_tile_data);
-    
+    for i in 0..tile_count_in_one_direction+1 {
+        let &prev_id = position_to_tile_id_mapping.get(&(0, i)).unwrap();
+        let tile_data = &tile_datas[&prev_id];
+        let right_edge = get_right_edge(&tile_data);
+        let &next_tile_id = 
+            edge_to_tile_mapping[&right_edge.normalize_edge()]
+                .iter()
+                .find(|&&id| id != prev_id)
+                .unwrap();
+
+
+        let next_tile_data = &tile_datas[&next_tile_id];
+        let next_tile_data = rotate_until(next_tile_data, |data| {
+            let left_edge = get_left_edge(data);
+            return left_edge == right_edge;
+        });
+
+        tile_datas.insert(next_tile_id, next_tile_data);
+        
+        position_to_tile_id_mapping.insert((0, i+1), next_tile_id);
+    }
 
     panic!();
+}
+
+fn rotate_until<P>(data: &PixelData, pred: P) -> PixelData
+    where P: Fn(&PixelData) -> bool
+{
+    let mut data = data.clone();
+
+    for i in 0..8 {
+        
+        if pred(&data) {
+            break;
+        }
+
+        if i == 4 {
+            data = flip(&data);
+        } else {
+            data = rotate(&data);
+        }
+        debug_assert!(i != 7);
+    }
+
+    return data;
+}
+
+fn get_left_edge(data: &PixelData) -> Edge {
+    
+    data
+        .iter()
+        .map(|line| *line.iter().next().unwrap())
+        .collect()
+}
+
+fn get_right_edge(data: &PixelData) -> Edge {
+     
+    data
+        .iter()
+        .map(|line| *line.iter().last().unwrap())
+        .collect()
+}
+
+fn get_top_edge(data: &PixelData) -> Edge {
+    data[0].clone()
+}
+
+fn get_bottom_edge(data: &PixelData) -> Edge {
+    data[data.len()-1].clone()
 }
 
 type Edge = Vec<Pixel>;
@@ -265,7 +337,7 @@ fn paint(picture_data: &mut PixelData, (tile_i, tile_j): (usize, usize), tile_da
     }
 }
 
-fn rotate(data: PixelData) -> PixelData {
+fn rotate(data: &PixelData) -> PixelData {
     let mut rotated = data.clone();
     let len = data.len();
 
@@ -278,7 +350,7 @@ fn rotate(data: PixelData) -> PixelData {
     return rotated;
 }
 
-fn flip(data: PixelData) -> PixelData {
+fn flip(data: &PixelData) -> PixelData {
     let mut flipped = data.clone();
     let len = data.len();
 
